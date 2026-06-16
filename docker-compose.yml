@@ -31,10 +31,13 @@ services:
     build: ./satu-backend
     volumes:
       - ./satu-backend:/app
+      - ./logs:/app/logs
     ports:
       - "8000:8000"
     env_file:
       - ./satu-backend/.env
+    environment:
+      - LOGS_DIR=/app/logs
     depends_on:
       db:
         condition: service_healthy
@@ -57,10 +60,13 @@ services:
     build: ./satu-storefront-api
     volumes:
       - ./satu-storefront-api:/app
+      - ./logs:/app/logs
     ports:
       - "8001:8001"
     env_file:
       - ./satu-storefront-api/.env
+    environment:
+      - LOGS_DIR=/app/logs
     depends_on:
       backend:
         condition: service_started

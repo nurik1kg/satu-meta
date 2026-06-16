@@ -12,3 +12,7 @@ satu-storefront-api/
 .idea/
 .vscode/
 *.swp
+
+# Runtime logs (mounted volume)
+logs/*
+!logs/.gitkeep
