@@ -1,0 +1,14 @@
+# Subprojects live in their own GitHub repos
+satu-backend/
+satu-kg-admin/
+satu-storefront/
+satu-storefront-api/
+
+# Claude session state
+.claude/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

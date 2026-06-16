@@ -1,0 +1,86 @@
+name: satu-backend
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: satu
+      POSTGRES_USER: satu
+      POSTGRES_PASSWORD: satu
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U satu -d satu"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./satu-backend
+    volumes:
+      - ./satu-backend:/app
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./satu-backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build: ./satu-kg-admin
+    volumes:
+      - ./satu-kg-admin:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+
+  storefront-api:
+    build: ./satu-storefront-api
+    volumes:
+      - ./satu-storefront-api:/app
+    ports:
+      - "8001:8001"
+    env_file:
+      - ./satu-storefront-api/.env
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+  storefront:
+    build: ./satu-storefront
+    volumes:
+      - ./satu-storefront:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+      - INTERNAL_API_URL=http://storefront-api:8001
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - storefront-api
+
+volumes:
+  postgres_data:
